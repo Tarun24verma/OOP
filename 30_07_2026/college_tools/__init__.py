@@ -1,2 +1,19 @@
+"""
+College Tools Package
+Provides utilities for marks and attendance.
+"""
+
+from .marks import (
+    total_marks,
+    average_marks,
+    calculate_grade,
+)
+
 from .attendance import attendance_percentage
-from .marks import ave, pass_status, grade
+
+__all__ = [
+    "total_marks",
+    "average_marks",
+    "calculate_grade",
+    "attendance_percentage",
+]
