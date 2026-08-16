@@ -22,17 +22,13 @@ Lowest Marks: 78
 ```"""
 
 
-def student_report(*args,**kwargs):
+def student_report(*marks,**kwargs): 
     for x,y in kwargs.items():
         label = x.replace("_", " ").title()
         print(f"{label}: {y}")
-    total,ele=0,0
-    for a in args:
-        total+=a
-        ele+=1
-    avg=total/ele
-    print(f"Total Marks: {total}")
+    avg=sum(marks)/len(marks)
+    print(f"Total Marks: {sum(marks)}")
     print(f"Average Marks: {avg}")
-    print(f"Highest Marks: {max(args)}")
-    print(f"Lowest Marks: {min(args)}")
-student_report(6, 40, 54, 26, name="Riya", roll_no=21, section="A")
+    print(f"Highest Marks: {max(marks)}")
+    print(f"Lowest Marks: {min(marks)}")
+student_report(85, 90, 78, 92, name="Riya", roll_no=21, section="A")

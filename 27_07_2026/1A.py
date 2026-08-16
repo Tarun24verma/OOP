@@ -13,8 +13,8 @@ calculate_bill(2000, 10, discount=100)    -> 2100.0
 ```"""
 
 
-# def calculate_bil(amount, tax_rate=5, *, discount=0):
-#     return amount+((amount*tax_rate)/100)-discount
+def calculate_bill(amount, tax_rate=5, *, discount=0)->int:
+    return int(amount+((amount*tax_rate)/100)-discount)
 # print(calculate_bil(1000))
 # print(calculate_bil(2000,10,discount=100))
 # #print(calculate_bil(2000,10,100))
@@ -22,7 +22,7 @@ calculate_bill(2000, 10, discount=100)    -> 2100.0
 #     print(calculate_bil(2000,10,100))
 #           ~~~~~~~~~~~~~^^^^^^^^^^^^^
 # TypeError: calculate_bil() takes from 1 to 2 positional arguments but 3 were given"""
-calculate_bill=lambda amount, tax_rate=5,*, discount=0: amount+((amount*tax_rate)/100)-discount
+# calculate_bill=lambda amount, tax_rate=5,*, discount=0:amount+((amount*tax_rate)/100)-discount
 print(calculate_bill(1000))
 print(calculate_bill(2000,10,discount=100))
 # print(calculate_bill(2000,10,100))
