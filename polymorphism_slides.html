@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polymorphism in Python</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#162033; --ink:#e2e8f0; --muted:#94a3b8;
+    --accent:#38bdf8; --accent2:#fbbf24; --good:#4ade80; --bad:#f87171;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#020617;overflow:hidden;font-family:var(--sans);color:var(--ink)}
+  #deck{
+    position:absolute; left:50%; top:50%;
+    width:1280px; height:720px; background:var(--bg);
+    transform-origin:center center; overflow:hidden;
+    border-radius:6px; box-shadow:0 20px 80px rgba(0,0,0,.6);
+  }
+  .slide{position:absolute; inset:0; padding:56px 84px 84px; display:none; flex-direction:column}
+  .slide.active{display:flex; animation:fade .35s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+
+  h1{font-size:76px; line-height:1.05; margin:0 0 18px; letter-spacing:-1px}
+  h2{font-size:46px; margin:0 0 28px; letter-spacing:-.5px}
+  h2 .tag{display:block; font-size:16px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:8px}
+  p{font-size:28px; line-height:1.5; margin:0 0 16px; color:var(--ink)}
+  .muted{color:var(--muted)}
+  .accent{color:var(--accent)} .accent2{color:var(--accent2)} .good{color:var(--good)} .bad{color:var(--bad)}
+  ul{margin:0; padding:0; list-style:none}
+  li{font-size:28px; line-height:1.45; margin-bottom:14px; padding-left:34px; position:relative}
+  li::before{content:""; position:absolute; left:0; top:.55em; width:12px; height:12px; border-radius:3px; background:var(--accent)}
+  b{color:var(--accent2); font-weight:650}
+
+  /* Title slide */
+  .title-slide{justify-content:center}
+  .title-slide .kicker{font-size:20px; letter-spacing:5px; text-transform:uppercase; color:var(--accent); margin-bottom:22px}
+  .title-slide .sub{font-size:32px; color:var(--muted); max-width:900px}
+  .title-slide .bar{width:120px; height:6px; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:3px; margin:30px 0}
+
+  /* Definition */
+  .quote{background:var(--panel); border-left:8px solid var(--accent); padding:34px 42px; border-radius:12px; font-size:36px; line-height:1.45}
+  .origin{margin-top:28px; font-size:24px; color:var(--muted)}
+  .origin code{font-family:var(--mono); color:var(--accent2)}
+
+  /* Cards */
+  .grid{display:grid; gap:22px}
+  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--panel); border-radius:14px; padding:24px 26px; border-top:4px solid var(--accent)}
+  .card h3{margin:0 0 10px; font-size:28px}
+  .card p{font-size:21px; line-height:1.45; margin:0; color:var(--muted)}
+  .card .icon{font-size:40px; margin-bottom:10px}
+  .card.c2{border-top-color:var(--accent2)} .card.c3{border-top-color:var(--good)} .card.c4{border-top-color:#c084fc}
+
+  /* Code */
+  pre{margin:0; background:#0b1220; border:1px solid #243049; border-radius:12px; padding:22px 26px; font-family:var(--mono); font-size:21px; line-height:1.5; overflow:hidden; white-space:pre; color:#dbe4f3}
+  .k{color:#c084fc} .s{color:#86efac} .c{color:#64748b; font-style:italic} .n{color:#fbbf24} .cls{color:#38bdf8}
+  .code-note{font-size:22px; color:var(--muted); margin-top:16px}
+
+  /* Flow */
+  .flow{display:flex; align-items:center; justify-content:center; gap:18px; margin-top:12px}
+  .box{background:var(--panel); border:2px solid var(--accent); border-radius:12px; padding:18px 22px; font-family:var(--mono); font-size:22px; text-align:center}
+  .box.hl{border-color:var(--accent2)}
+  .arrow{font-size:40px; color:var(--muted)}
+  .branches{display:flex; flex-direction:column; gap:12px}
+  .branches .box{font-size:20px; padding:12px 20px; text-align:left}
+  .flow-caption{font-size:24px; color:var(--muted); text-align:center; margin-top:30px; line-height:1.5}
+
+  /* Demo */
+  .btnrow{display:flex; gap:14px; margin-bottom:22px}
+  .pick{font-family:var(--sans); font-size:22px; font-weight:600; color:var(--ink); background:var(--panel); border:2px solid #334155; border-radius:10px; padding:12px 24px; cursor:pointer}
+  .pick:hover{border-color:var(--accent)}
+  .pick.on{background:var(--accent); color:#0f172a; border-color:var(--accent)}
+  .pick.new{border-style:dashed; border-color:var(--accent2)}
+  .pick.new.on{background:var(--accent2); border-color:var(--accent2)}
+  .term{background:#020617; border:1px solid #243049; border-radius:12px; padding:22px 28px; font-family:var(--mono); font-size:24px; line-height:1.7; min-height:190px}
+  .term .prompt{color:var(--muted)} .term .out{color:var(--good)}
+
+  .compact{gap:16px}
+  .compact .card{padding:16px 22px; display:grid; grid-template-columns:48px 1fr; column-gap:14px; align-items:center}
+  .compact .card .icon{grid-row:1 / span 2; font-size:34px; margin:0}
+  .compact .card h3{font-size:24px; margin:0 0 4px}
+  .compact .card p{font-size:18px; line-height:1.35}
+  .tight li{font-size:25px; margin-bottom:10px}
+  .tight .quote{font-size:28px; padding:24px 34px}
+  pre.code19{font-size:19px; line-height:1.45}
+  /* Compare */
+  .cmp-title{font-size:24px; font-weight:700; margin-bottom:10px}
+  pre.small{font-size:18px; padding:18px 22px}
+
+  /* Controls */
+  #ui{position:absolute; left:0; right:0; bottom:0; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 30px; color:var(--muted); font-size:16px; z-index:5}
+  #ui button{background:transparent; color:var(--muted); border:1px solid #334155; border-radius:8px; padding:6px 14px; font-size:16px; cursor:pointer}
+  #ui button:hover{color:var(--ink); border-color:var(--accent)}
+  #ui .mid{display:flex; gap:10px; align-items:center}
+  #progress{position:absolute; left:0; bottom:0; height:5px; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:0; transition:width .3s}
+  .hint{font-size:14px; opacity:.7}
+</style>
+</head>
+<body>
+<div id="deck">
+
+  <!-- 1. Title -->
+  <section class="slide title-slide">
+    <div class="kicker">Python · Object-Oriented Programming</div>
+    <h1>Polymorphism</h1>
+    <div class="bar"></div>
+    <div class="sub">One instruction, many forms. Understanding it through a real <span class="accent2">checkout()</span> example.</div>
+  </section>
+
+  <!-- 2. Definition -->
+  <section class="slide">
+    <h2><span class="tag">Definition</span>What is Polymorphism?</h2>
+    <div class="quote">
+      <b>Polymorphism</b> is the ability of different objects to respond to the <span class="accent">same method call</span> in <span class="accent">their own way</span>.
+    </div>
+    <div class="origin">
+      From Greek: <code>poly</code> = many, <code>morph</code> = forms &nbsp;→&nbsp; <b>"many forms"</b>
+    </div>
+    <ul style="margin-top:34px">
+      <li>The caller uses <b>one common interface</b> (a method name like <code style="font-family:var(--mono)">pay()</code>)</li>
+      <li>Each object decides <b>what that method actually does</b></li>
+    </ul>
+  </section>
+
+  <!-- 3. Real-life analogy -->
+  <section class="slide">
+    <h2><span class="tag">Real life</span>The "Please pay" moment</h2>
+    <p>A cashier says the same thing every time: <b>"Please pay."</b> What happens next depends on how you pay.</p>
+    <div class="grid g4" style="margin-top:22px">
+      <div class="card"><div class="icon">💵</div><h3>Cash</h3><p>Hand over notes, get change back</p></div>
+      <div class="card c2"><div class="icon">📱</div><h3>UPI</h3><p>Scan the QR code, enter your PIN</p></div>
+      <div class="card c3"><div class="icon">💳</div><h3>Card</h3><p>Swipe or tap, then confirm</p></div>
+      <div class="card c4"><div class="icon">🏦</div><h3>Net banking</h3><p>Log in and approve the transfer</p></div>
+    </div>
+    <p class="muted" style="margin-top:30px; font-size:25px">The cashier doesn't care about the details. One action, many forms.</p>
+  </section>
+
+  <!-- 4. Types -->
+  <section class="slide">
+    <h2><span class="tag">Types in Python</span>Ways polymorphism shows up</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Method overriding</h3><p>A child class redefines a method of its parent. The right version runs at runtime.</p></div>
+      <div class="card c2"><h3>Duck typing</h3><p>No shared parent needed. If an object has the method, it works.</p></div>
+      <div class="card c3"><h3>Built-in functions</h3><p><span style="font-family:var(--mono)">len()</span> works on strings, lists, dicts and more.</p></div>
+      <div class="card c4"><h3>Operator overloading</h3><p><span style="font-family:var(--mono)">+</span> adds numbers, joins strings, merges lists. Your classes can define it too via <span style="font-family:var(--mono)">__add__</span>.</p></div>
+    </div>
+    <p class="muted" style="margin-top:28px; font-size:24px">Python has no method overloading by signature. A later <span style="font-family:var(--mono)">def</span> with the same name replaces the earlier one.</p>
+  </section>
+
+  <!-- 5. Use cases -->
+  <section class="slide">
+    <h2><span class="tag">Use cases</span>Where polymorphism is used</h2>
+    <div class="grid g3 compact">
+      <div class="card"><div class="icon">💳</div><h3>Payment systems</h3><p>Cash, UPI, card and wallet all expose <span style="font-family:var(--mono)">pay()</span>.</p></div>
+      <div class="card c2"><div class="icon">📐</div><h3>Shapes &amp; graphics</h3><p>Circle, Rectangle and Triangle each compute <span style="font-family:var(--mono)">area()</span> and <span style="font-family:var(--mono)">draw()</span>.</p></div>
+      <div class="card c3"><div class="icon">🔔</div><h3>Notifications</h3><p>Email, SMS and push all implement <span style="font-family:var(--mono)">send()</span>.</p></div>
+      <div class="card c4"><div class="icon">🗄️</div><h3>Database drivers</h3><p>MySQL, PostgreSQL and SQLite share <span style="font-family:var(--mono)">connect()</span> and <span style="font-family:var(--mono)">query()</span>.</p></div>
+      <div class="card"><div class="icon">📄</div><h3>File exporters</h3><p>PDF, CSV and JSON exporters all provide <span style="font-family:var(--mono)">export()</span>.</p></div>
+      <div class="card c2"><div class="icon">🎮</div><h3>Game characters</h3><p>Warrior, Mage and Archer each respond to <span style="font-family:var(--mono)">attack()</span> differently.</p></div>
+    </div>
+    <p class="muted" style="margin-top:22px; font-size:22px">Common thread: a family of types, one shared method name, different behaviour.</p>
+  </section>
+
+  <!-- 6. checkout: classes -->
+  <section class="slide">
+    <h2><span class="tag">Example · Part 1</span>checkout(): the payment classes</h2>
+<pre class="py code19">class Payment:
+    def pay(self, amount):
+        raise NotImplementedError
+
+class Cash(Payment):
+    def pay(self, amount):
+        return f"Handed over ₹{amount} in cash"
+
+class UPI(Payment):
+    def pay(self, amount):
+        return f"Scanned QR and paid ₹{amount} via UPI"
+
+class CreditCard(Payment):
+    def pay(self, amount):
+        return f"Swiped card and paid ₹{amount}"</pre>
+    <div class="code-note"><b>Payment</b> defines the common method name. Each subclass <b>overrides</b> <span style="font-family:var(--mono)">pay()</span> with its own behaviour.</div>
+  </section>
+
+  <!-- 7. checkout: function + output -->
+  <section class="slide">
+    <h2><span class="tag">Example · Part 2</span>checkout(): the cashier function</h2>
+<pre class="py">def checkout(method, amount):
+    print(method.pay(amount))     # cashier just says "pay"
+
+checkout(Cash(), 500)
+checkout(UPI(), 500)
+checkout(CreditCard(), 500)</pre>
+    <div class="term" style="margin-top:22px; min-height:0">
+      <div class="prompt">Output</div>
+      <div class="out">Handed over ₹500 in cash</div>
+      <div class="out">Scanned QR and paid ₹500 via UPI</div>
+      <div class="out">Swiped card and paid ₹500</div>
+    </div>
+    <div class="code-note"><span style="font-family:var(--mono)">checkout()</span> never checks the type. It just calls <span style="font-family:var(--mono)">method.pay()</span>.</div>
+  </section>
+
+  <!-- 8. How it works -->
+  <section class="slide">
+    <h2><span class="tag">Under the hood</span>How Python picks the right pay()</h2>
+    <div class="flow">
+      <div class="box">checkout(<span class="accent2">method</span>, 500)</div>
+      <div class="arrow">→</div>
+      <div class="box hl">method.pay(500)<br><span style="font-size:16px; color:var(--muted)">resolved at runtime</span></div>
+      <div class="arrow">→</div>
+      <div class="branches">
+        <div class="box">Cash.pay() <span class="muted">if method is Cash</span></div>
+        <div class="box">UPI.pay() <span class="muted">if method is UPI</span></div>
+        <div class="box">CreditCard.pay() <span class="muted">if method is CreditCard</span></div>
+      </div>
+    </div>
+    <div class="flow-caption">
+      Python looks at the <b>actual object's class</b> (and its MRO) when the call happens,<br>
+      then runs that class's version of <span style="font-family:var(--mono)">pay()</span>.
+    </div>
+  </section>
+
+  <!-- 9. Interactive demo -->
+  <section class="slide">
+    <h2><span class="tag">Try it</span>Same call, different behaviour</h2>
+    <div class="btnrow" id="picks">
+      <button class="pick on" data-m="Cash">Cash()</button>
+      <button class="pick" data-m="UPI">UPI()</button>
+      <button class="pick" data-m="CreditCard">CreditCard()</button>
+      <button class="pick new" data-m="Wallet">Wallet() · new</button>
+    </div>
+    <div class="term">
+      <div><span class="prompt">&gt;&gt;&gt;</span> checkout(<span id="callname" class="accent2">Cash()</span>, 500)</div>
+      <div class="out" id="callout">Handed over ₹500 in cash</div>
+    </div>
+    <p class="muted" id="demonote" style="margin-top:24px; font-size:24px">Click a payment method. The line <span style="font-family:var(--mono)">checkout(...)</span> stays the same; only the object changes.</p>
+  </section>
+
+  <!-- 10. Extend without changing -->
+  <section class="slide">
+    <h2><span class="tag">Extensibility</span>Add a new method. checkout() stays untouched.</h2>
+<pre class="py">class Wallet(Payment):            # new class, added later
+    def pay(self, amount):
+        return f"Paid ₹{amount} from wallet balance"
+
+checkout(Wallet(), 500)           # works immediately</pre>
+    <div class="term" style="margin-top:22px; min-height:0">
+      <div class="prompt">Output</div>
+      <div class="out">Paid ₹500 from wallet balance</div>
+    </div>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="card c3"><p style="color:var(--ink)"><b class="good">Changed:</b> one new class</p></div>
+      <div class="card"><p style="color:var(--ink)"><b>Not changed:</b> <span style="font-family:var(--mono)">checkout()</span>, <span style="font-family:var(--mono)">Cash</span>, <span style="font-family:var(--mono)">UPI</span>, <span style="font-family:var(--mono)">CreditCard</span></p></div>
+    </div>
+  </section>
+
+  <!-- 11. Without vs with -->
+  <section class="slide">
+    <h2><span class="tag">Why it matters</span>Without vs with polymorphism</h2>
+    <div class="grid g2">
+      <div>
+        <div class="cmp-title bad">✗ Without: type-checking chain</div>
+<pre class="py small">def checkout(kind, amount):
+    if kind == "cash":
+        print(f"Handed over ₹{amount}")
+    elif kind == "upi":
+        print(f"Paid ₹{amount} via UPI")
+    elif kind == "card":
+        print(f"Paid ₹{amount} by card")
+    # new method? edit this
+    # function every time</pre>
+      </div>
+      <div>
+        <div class="cmp-title good">✓ With: one method call</div>
+<pre class="py small">def checkout(method, amount):
+    print(method.pay(amount))
+
+
+# new method? just write a
+# new class with pay().
+# checkout() never changes.</pre>
+      </div>
+    </div>
+    <ul style="margin-top:26px">
+      <li style="font-size:25px; margin-bottom:8px">Less repetition, no long <span style="font-family:var(--mono)">if/elif</span> chains</li>
+      <li style="font-size:25px; margin-bottom:8px">Easy to extend without touching working code</li>
+    </ul>
+  </section>
+
+  <!-- 12. Takeaways -->
+  <section class="slide tight">
+    <h2><span class="tag">Summary</span>Key takeaways</h2>
+    <ul>
+      <li><b>Polymorphism</b> = same method name, different behaviour depending on the object</li>
+      <li>In Python it comes from <b>overriding</b>, <b>duck typing</b> and <b>special methods</b> like <span style="font-family:var(--mono)">__add__</span></li>
+      <li>The caller (<span style="font-family:var(--mono)">checkout()</span>) depends only on the <b>common interface</b>, not the concrete type</li>
+      <li>New types can be added <b>without modifying</b> existing code</li>
+    </ul>
+    <div class="quote" style="margin-top:14px">Give the same instruction to different objects, and trust each one to do the right thing in its own way.</div>
+  </section>
+
+  <div id="ui">
+    <span id="counter">1 / 1</span>
+    <span class="mid">
+      <button id="prev" aria-label="Previous slide">◀ Prev</button>
+      <button id="next" aria-label="Next slide">Next ▶</button>
+      <button id="full" aria-label="Fullscreen">⛶ Fullscreen</button>
+    </span>
+    <span class="hint">← → / Space · F fullscreen</span>
+  </div>
+  <div id="progress"></div>
+</div>
+
+<script>
+(function(){
+  var deck = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+  var progress = document.getElementById('progress');
+  var idx = 0;
+
+  /* Fit 1280x720 canvas to window */
+  function fit(){
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  /* Simple Python highlighter */
+  function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  var re = /(#.*$)|(f?"[^"\n]*")|(\b(?:class|def|return|raise|print|for|in|if|elif|else|import|pass)\b)|(\bself\b)|(\b[A-Z][A-Za-z]*\b)|(\b\d+\b)/gm;
+  Array.prototype.forEach.call(deck.querySelectorAll('pre.py'), function(pre){
+    var out = esc(pre.textContent).replace(re, function(m, com, str, kw, slf, cls, num){
+      if (com) return '<span class="c">' + m + '</span>';
+      if (str) return '<span class="s">' + m + '</span>';
+      if (kw)  return '<span class="k">' + m + '</span>';
+      if (slf) return '<span class="n">' + m + '</span>';
+      if (cls) return '<span class="cls">' + m + '</span>';
+      if (num) return '<span class="n">' + m + '</span>';
+      return m;
+    });
+    pre.innerHTML = out;
+  });
+
+  /* Navigation */
+  function show(n){
+    idx = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, i){ s.classList.toggle('active', i === idx); });
+    counter.textContent = (idx + 1) + ' / ' + slides.length;
+    progress.style.width = ((idx + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#' + (idx + 1)); } catch(e) {}
+  }
+  function next(){ show(idx + 1); }
+  function prev(){ show(idx - 1); }
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+  document.getElementById('full').addEventListener('click', toggleFull);
+
+  function toggleFull(){
+    try {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    } catch(e) {}
+  }
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); prev(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'f' || k === 'F') toggleFull();
+  });
+
+  var sx = null;
+  document.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+    sx = null;
+  }, {passive:true});
+
+  /* Interactive demo */
+  var results = {
+    Cash: 'Handed over \u20B9500 in cash',
+    UPI: 'Scanned QR and paid \u20B9500 via UPI',
+    CreditCard: 'Swiped card and paid \u20B9500',
+    Wallet: 'Paid \u20B9500 from wallet balance'
+  };
+  var callname = document.getElementById('callname');
+  var callout = document.getElementById('callout');
+  var demonote = document.getElementById('demonote');
+  Array.prototype.forEach.call(document.querySelectorAll('#picks .pick'), function(btn){
+    btn.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('#picks .pick'), function(b){ b.classList.remove('on'); });
+      btn.classList.add('on');
+      var m = btn.getAttribute('data-m');
+      callname.textContent = m + '()';
+      callout.textContent = results[m];
+      demonote.innerHTML = m === 'Wallet'
+        ? 'A brand-new class, and <span style="font-family:var(--mono)">checkout()</span> handled it with zero changes.'
+        : 'Click a payment method. The line <span style="font-family:var(--mono)">checkout(...)</span> stays the same; only the object changes.';
+    });
+  });
+
+  var start = parseInt((location.hash || '').replace('#',''), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

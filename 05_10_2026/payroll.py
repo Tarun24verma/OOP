@@ -1,6 +1,3 @@
-
-
-
 class Employee:
     ALLOWANCE_RATE = 0.2
     def __init__(self, emp_id, name, base_salary):
